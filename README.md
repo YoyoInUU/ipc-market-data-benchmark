@@ -48,8 +48,10 @@ The first version uses two processes:
 ipc-market-data-benchmark/
 ├── CMakeLists.txt
 ├── include/
+│   ├── benchmark.hpp
 │   └── market_data.hpp
 └── src/
+    ├── benchmark.cpp
     └── pipeline.cpp
 ```
 

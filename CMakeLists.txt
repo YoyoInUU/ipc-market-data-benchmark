@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(ipc_benchmark
     src/pipeline.cpp
+    src/benchmark.cpp
 )
 
 target_include_directories(ipc_benchmark

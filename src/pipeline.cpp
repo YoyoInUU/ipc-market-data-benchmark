@@ -1,3 +1,4 @@
+#include "benchmark.hpp"
 #include "market_data.hpp"
 
 #include <chrono>
@@ -6,6 +7,8 @@
 #include <sys/wait.h>
 #include <cstdlib>
 
+constexpr uint64_t NUM_MESSAGES {1'000'000};
+
 uint64_t now_ns() {
     return std::chrono::duration_cast<std::chrono::nanoseconds>(
         std::chrono::steady_clock::now().time_since_epoch()
@@ -13,9 +16,6 @@ uint64_t now_ns() {
 }
 
 void producer(int write_fd) {
-
-    constexpr uint64_t NUM_MESSAGES {1'000'000};
-
     for (uint64_t i = 0; i < NUM_MESSAGES; ++i) {
 
         MarketData data{
@@ -25,7 +25,7 @@ void producer(int write_fd) {
             .quantity = 100
         };
 
-        ssize_t result = write(write_fd, &data, sizeof(data));
+        const ssize_t result = write(write_fd, &data, sizeof(data));
 
         if (result != sizeof(data)) {
             std::cerr << "write failed\n";
@@ -37,16 +37,23 @@ void producer(int write_fd) {
 }
 
 void consumer(int read_fd) {
-    uint64_t total_latency {0};
     uint64_t count {0};
 
     MarketData data {};
 
-    while (true) {
-        ssize_t result = read(read_fd, &data, sizeof(data));
+    Benchmark benchmark;
+    benchmark.start();
 
-        if (result <= 0) {
+    while (true) {
+        const ssize_t result = read(read_fd, &data, sizeof(data));
+
+        if (result == 0) {
             break;
+        }
+
+        if (result < 0) {
+            std::cerr << "read failed\n";
+            std::exit(1);
         }
 
         if (result != sizeof(data)) {
@@ -54,21 +61,17 @@ void consumer(int read_fd) {
             std::exit(1);
         }
 
-        uint64_t received = now_ns();
-        uint64_t latency = received - data.timestamp_ns;
-        total_latency += latency;
+        const uint64_t received = now_ns();
+        const uint64_t latency = received - data.timestamp_ns;
 
+        benchmark.record_latency(latency);
         ++count;
     }
 
     close(read_fd);
 
-    if (count > 0) {
-        double avg_ns = static_cast<double>(total_latency) / count;
-
-        std::cout << "Messages: " << count << '\n';
-        std::cout << "Average latency: " << avg_ns / 1000.0 << " us\n";
-    }
+    std::cout << "Messages: " << count << '\n';
+    benchmark.print_results(count);
 }
 
 int main() {
