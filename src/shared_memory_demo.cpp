@@ -6,6 +6,9 @@
 #include <chrono>
 #include <cstdint>
 #include <iostream>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 int main() {
     ipc::SharedMemory shared_memory;
@@ -15,8 +18,28 @@ int main() {
         return 1;
     }
 
-    std::cout << "Shared memory benchmark started\n";
+    pid_t pid = fork();
 
+    if (pid < 0) {
+        std::cerr << "fork() failed\n";
+        return 1;
+    }
+
+    if (pid == 0) {
+        // Producer
+        for (uint64_t i = 0; i < NUM_MESSAGES; ++i) {
+            MarketData data{};
+            data.timestamp_ns = Benchmark::Clock::now()
+                                    .time_since_epoch()
+                                    .count();
+
+            shared_memory.write(data);
+        }
+
+        return 0;
+    }
+
+    // Consumer
     Benchmark benchmark;
     benchmark.start();
 
@@ -40,6 +63,8 @@ int main() {
     }
 
     benchmark.print_results(NUM_MESSAGES);
+
+    waitpid(pid, nullptr, 0);
     shared_memory.close();
 
     return 0;
