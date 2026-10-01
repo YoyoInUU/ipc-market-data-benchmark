@@ -1,4 +1,5 @@
 #include "benchmark.hpp"
+#include "config.hpp"
 #include "market_data.hpp"
 
 #include <chrono>
@@ -6,8 +7,6 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <cstdlib>
-
-constexpr uint64_t NUM_MESSAGES {1'000'000};
 
 uint64_t now_ns() {
     return std::chrono::duration_cast<std::chrono::nanoseconds>(

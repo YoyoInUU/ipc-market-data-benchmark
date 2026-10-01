@@ -49,10 +49,14 @@ ipc-market-data-benchmark/
 ├── CMakeLists.txt
 ├── include/
 │   ├── benchmark.hpp
-│   └── market_data.hpp
+│   ├── config.hpp
+│   ├── market_data.hpp
+│   └── shared_memory.hpp
 └── src/
     ├── benchmark.cpp
-    └── pipeline.cpp
+    ├── pipeline.cpp
+    ├── shared_memory.cpp
+    └── shared_memory_demo.cpp
 ```
 
 **Requirements**
