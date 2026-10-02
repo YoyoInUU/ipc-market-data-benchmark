@@ -28,15 +28,17 @@ target_link_libraries(pipeline PRIVATE
 add_executable(shared_memory_demo
     src/shared_memory_demo.cpp
     src/shared_memory.cpp
+    src/ring_buffer.cpp
 )
 
 target_link_libraries(shared_memory_demo PRIVATE
     benchmark
 )
 
-# Ring Buffer
+# Shared Memory Ring Buffer IPC
 add_executable(ring_buffer_demo
     src/ring_buffer_demo.cpp
+    src/shared_memory.cpp
     src/ring_buffer.cpp
 )
 

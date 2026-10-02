@@ -2,6 +2,7 @@
 #include "shared_memory.hpp"
 
 #include <fcntl.h>
+#include <new>
 #include <sys/mman.h>
 #include <unistd.h>
 
@@ -30,7 +31,7 @@ bool SharedMemory::create() {
         return false;
     }
 
-    memory_ = static_cast<SharedMemoryData*>(ptr);
+    memory_ = new (ptr) SharedMemoryData {};
 
     return true;
 }
@@ -59,6 +60,7 @@ bool SharedMemory::open() {
     return true;
 }
 
+// v2
 bool SharedMemory::write(const MarketData& data) {
     if (memory_ == nullptr) {
         return false;
@@ -85,6 +87,11 @@ bool SharedMemory::read(MarketData& data) {
     memory_->ready.store(false, std::memory_order_release);
 
     return true;
+}
+
+// v3
+SharedMemoryData* SharedMemory::data() {
+    return memory_;
 }
 
 void SharedMemory::close() {

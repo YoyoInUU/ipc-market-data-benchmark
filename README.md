@@ -50,16 +50,21 @@ The first version uses two processes:
 
 Implement a shared-memory ring buffer:
 ```
-Producer
+Producer Process
     │
+    │ try_push()
     ▼
-┌─────────────────────────────┐
-│  Ring Buffer                │
-│ [ ][ ][ ][ ][ ][ ][ ][ ]   │
-└─────────────────────────────┘
-                    │
-                    ▼
-                Consumer
+┌─────────────────────────────────┐
+│       POSIX Shared Memory       │
+│ ┌─────────────────────────────┐ │
+│ │ Ring Buffer                 │ │
+│ │ [ ][ ][ ][ ][ ][ ][ ][ ]    │ │
+│ └─────────────────────────────┘ │
+└─────────────────────────────────┘
+                      │
+                      │ try_pop()
+                      ▼
+                Consumer Process
 ```
 
 ### Compilation

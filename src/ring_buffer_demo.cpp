@@ -1,30 +1,35 @@
 #include "benchmark.hpp"
-#include "ring_buffer.hpp"
+#include "shared_memory.hpp"
 
 #include <cstdint>
 #include <iostream>
+#include <sys/wait.h>
 #include <thread>
+#include <unistd.h>
 
 int main() {
-    ipc::RingBuffer ring;
+    ipc::SharedMemory shared_memory;
 
-    Benchmark benchmark;
-    benchmark.start();
+    if (!shared_memory.create()) {
+        std::cerr << "Failed to create shared memory\n";
+        return 1;
+    }
 
-    std::thread producer([&ring]() {
-        for (uint64_t i {0}; i < NUM_MESSAGES; ++i) {
-            MarketData data {};
+    auto* shared {shared_memory.data()};
+    auto& ring {shared->ring};
 
-            data.sequence = i;
-            data.timestamp_ns = Benchmark::now_ns();
+    const pid_t pid {fork()};
 
-            while (!ring.try_push(data)) {
-                std::this_thread::yield();
-            }
-        }
-    });
+    if (pid == -1) {
+        std::cerr << "fork() failed\n";
+        return 1;
+    }
 
-    std::thread consumer([&ring, &benchmark]() {
+    if (pid == 0) {
+        // Consumer
+        Benchmark benchmark;
+        benchmark.start();
+
         for (uint64_t i {0}; i < NUM_MESSAGES; ++i) {
             MarketData data {};
 
@@ -37,12 +42,27 @@ int main() {
 
             benchmark.record_latency(latency);
         }
-    });
 
-    producer.join();
-    consumer.join();
+        benchmark.print_results(NUM_MESSAGES);
 
-    benchmark.print_results(NUM_MESSAGES);
+        return 0;
+    }
+
+    // Producer
+    for (uint64_t i {0}; i < NUM_MESSAGES; ++i) {
+        MarketData data {};
+
+        data.sequence = i;
+        data.timestamp_ns = Benchmark::now_ns();
+
+        while (!ring.try_push(data)) {
+            std::this_thread::yield();
+        }
+    }
+
+    waitpid(pid, nullptr, 0);
+
+    shared_memory.unlink();
 
     return 0;
 }
