@@ -9,6 +9,7 @@ public:
     using Clock = std::chrono::steady_clock;
 
     // Timing
+    static uint64_t now_ns();
     void start();
     uint64_t elapsed_ns() const;
 

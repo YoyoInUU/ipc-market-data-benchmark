@@ -2,24 +2,17 @@
 #include "config.hpp"
 #include "market_data.hpp"
 
-#include <chrono>
 #include <iostream>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <cstdlib>
-
-uint64_t now_ns() {
-    return std::chrono::duration_cast<std::chrono::nanoseconds>(
-        std::chrono::steady_clock::now().time_since_epoch()
-    ).count();
-}
 
 void producer(int write_fd) {
     for (uint64_t i = 0; i < NUM_MESSAGES; ++i) {
 
         MarketData data{
             .sequence = i,
-            .timestamp_ns = now_ns(),
+            .timestamp_ns = Benchmark::now_ns(),
             .price = 100.0 + (i % 100) * 0.01,
             .quantity = 100
         };
@@ -60,7 +53,7 @@ void consumer(int read_fd) {
             std::exit(1);
         }
 
-        const uint64_t received = now_ns();
+        const uint64_t received = Benchmark::now_ns();
         const uint64_t latency = received - data.timestamp_ns;
 
         benchmark.record_latency(latency);

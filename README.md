@@ -46,6 +46,22 @@ The first version uses two processes:
 - An atomic `ready` flag synchronizes access using busy-waiting.
 - The Consumer measures communication latency for comparison with the POSIX pipe version.
 
+**v3 - Ring Buffer**
+
+Implement a shared-memory ring buffer:
+```
+Producer
+    │
+    ▼
+┌─────────────────────────────┐
+│  Ring Buffer                │
+│ [ ][ ][ ][ ][ ][ ][ ][ ]   │
+└─────────────────────────────┘
+                    │
+                    ▼
+                Consumer
+```
+
 ### Compilation
 
 **File Structure**
@@ -57,10 +73,13 @@ ipc-market-data-benchmark/
 │   ├── benchmark.hpp
 │   ├── config.hpp
 │   ├── market_data.hpp
+│   ├── ring_buffer.hpp
 │   └── shared_memory.hpp
 └── src/
     ├── benchmark.cpp
     ├── pipeline.cpp
+    ├── ring_buffer.cpp
+    ├── ring_buffer_demo.cpp
     ├── shared_memory.cpp
     └── shared_memory_demo.cpp
 ```
@@ -95,6 +114,9 @@ make
 
 # Shared memory
 ./shared_memory_demo
+
+# Ring buffer
+./ring_buffer_demo
 ```
 
 **Build on Windows using WSL 2**

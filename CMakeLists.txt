@@ -33,3 +33,13 @@ add_executable(shared_memory_demo
 target_link_libraries(shared_memory_demo PRIVATE
     benchmark
 )
+
+# Ring Buffer
+add_executable(ring_buffer_demo
+    src/ring_buffer_demo.cpp
+    src/ring_buffer.cpp
+)
+
+target_link_libraries(ring_buffer_demo PRIVATE
+    benchmark
+)

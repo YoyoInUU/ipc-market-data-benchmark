@@ -1,3 +1,4 @@
+#include "config.hpp"
 #include "shared_memory.hpp"
 
 #include <fcntl.h>
@@ -11,7 +12,7 @@ SharedMemory::~SharedMemory() {
 }
 
 bool SharedMemory::create() {
-    fd_ = shm_open(SHARED_MEMORY_NAME, O_CREAT | O_RDWR, 0666);
+    fd_ = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
 
     if (fd_ == -1) {
         return false;
@@ -35,7 +36,7 @@ bool SharedMemory::create() {
 }
 
 bool SharedMemory::open() {
-    fd_ = shm_open(SHARED_MEMORY_NAME, O_CREAT | O_RDWR, 0666);
+    fd_ = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
 
     if (fd_ == -1) {
         return false;
@@ -99,7 +100,7 @@ void SharedMemory::close() {
 }
 
 void SharedMemory::unlink() {
-    shm_unlink(SHARED_MEMORY_NAME);
+    shm_unlink(SHM_NAME);
 }
 
 } // namespace ipc

@@ -7,8 +7,6 @@
 
 namespace ipc {
 
-constexpr const char* SHARED_MEMORY_NAME = "/ipc_market_data";
-
 struct SharedMemoryData {
     std::atomic<bool> ready{false};
     MarketData data{};
